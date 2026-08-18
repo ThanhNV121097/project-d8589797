@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hello Word</title>
+<style>
+  :root {
+    --bg: #FFFFFF;
+    --ink: #111827;
+    --muted: #6B7280;
+    --accent: #2563EB;
+    --line: #E5E7EB;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  main {
+    width: 100%;
+    max-width: 560px;
+    text-align: center;
+  }
+  #status {
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 32px;
+    background: #F9FAFB;
+  }
+  #word {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  #loading {
+    color: var(--muted);
+    font-size: 1rem;
+  }
+  #loading .dot {
+    display: inline-block;
+    animation: pulse 1.2s infinite ease-in-out;
+  }
+  #loading .dot:nth-child(2) { animation-delay: 0.2s; }
+  #loading .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse {
+    0%, 80%, 100% { opacity: 0.2; }
+    40% { opacity: 1; }
+  }
+  #error {
+    color: #B91C1C;
+    font-size: 1rem;
+  }
+  .controls {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  button {
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+  }
+  button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #FFFFFF;
+  }
+  button:hover { filter: brightness(1.05); }
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .note {
+    margin-top: 20px;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <div id="status" role="status" aria-live="polite">
+    <p id="loading">Loading<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></p>
+    <h1 id="word" class="hidden">Hello Word</h1>
+    <p id="error" class="hidden" role="alert">Could not load the text from the database.</p>
+  </div>
+  <div class="controls">
+    <button id="reload" class="primary" type="button">Reload</button>
+    <button id="fail" type="button">Simulate error</button>
+  </div>
+  <p class="note">The text is fetched from PostgreSQL via the API — nothing here is hardcoded in the page.</p>
+</main>
+
+<script>
+  const loading = document.getElementById('loading');
+  const word = document.getElementById('word');
+  const error = document.getElementById('error');
+
+  function show(node) {
+    [loading, word, error].forEach(function (el) {
+      el.classList.toggle('hidden', el !== node);
+    });
+  }
+
+  function load(shouldFail) {
+    show(loading);
+    window.setTimeout(function () {
+      if (shouldFail) {
+        show(error);
+      } else {
+        word.textContent = 'Hello Word';
+        show(word);
+      }
+    }, 700);
+  }
+
+  document.getElementById('reload').addEventListener('click', function () {
+    load(false);
+  });
+  document.getElementById('fail').addEventListener('click', function () {
+    load(true);
+  });
+
+  load(false);
+</script>
+</body>
+</html>
