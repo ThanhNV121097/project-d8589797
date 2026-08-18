@@ -1,0 +1,18 @@
+# Local secrets — never commit.
+.env
+.env.local
+.env.deploy
+
+# Node
+node_modules
+.next
+out
+
+# Go
+vendor/
+*.exe
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
