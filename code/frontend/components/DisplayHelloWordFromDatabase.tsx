@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { fetchContent } from "../lib/mock/display-hello-word-from-database";
+import { fetchContent } from "../lib/api/display-hello-word-from-database";
 import styles from "./DisplayHelloWordFromDatabase.module.css";
 
 type Status = "loading" | "loaded" | "error";
