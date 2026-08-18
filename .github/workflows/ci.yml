@@ -63,7 +63,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Validate compose file
-        run: docker compose config -q
+        run: docker compose --profile local config -q
 
   tokens:
     name: Design tokens
