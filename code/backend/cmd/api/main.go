@@ -30,8 +30,6 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	_ "github.com/jackc/pgx/v5/stdlib"
-
-	"github.com/ThanhNV121097/project-d8589797/backend/migrations"
 )
 
 func main() {
@@ -232,7 +230,7 @@ func migrate(ctx context.Context, db *sql.DB) error {
 		return fmt.Errorf("create schema_migrations: %w", err)
 	}
 
-	entries, err := migrations.Files.ReadDir(".")
+	entries, err := Files.ReadDir("migrations")
 	if err != nil {
 		return fmt.Errorf("read embedded migrations: %w", err)
 	}
@@ -256,7 +254,7 @@ func migrate(ctx context.Context, db *sql.DB) error {
 			continue
 		}
 
-		body, err := migrations.Files.ReadFile(name)
+		body, err := Files.ReadFile("migrations/" + name)
 		if err != nil {
 			return fmt.Errorf("read %s: %w", name, err)
 		}
