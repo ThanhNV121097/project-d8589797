@@ -19,7 +19,7 @@ the entire product.
 
 | Actor | Who they are | What they may do in this module |
 |---|---|---|
-| Guest | Anyone visiting the site, not signed in | View the displayed text; trigger a reload of the text |
+| Guest | Anyone visiting the site, not signed in | View the displayed text; trigger retry on error |
 
 There is no sign-in, no account, and no write action in this module.
 
@@ -90,6 +90,8 @@ Behaviour:
 | AC-4 | The fetch succeeds | The fetch completes | The loading state is replaced by the loaded text |
 | AC-5 | The fetch fails (backend unavailable or returns an error) | The Guest loads or reloads | An error state is shown, not a blank screen |
 | AC-6 | The fetch failed and an error state is showing | The Guest triggers retry and the fetch succeeds | The error state is replaced by the loaded text |
+| AC-7 | The database has no row for the text | The Guest loads the site | An error state with a retry control is shown, not a blank screen |
+| AC-8 | The stored text is an empty string | The Guest loads the site | An error state with a retry control is shown; the empty string is not rendered as if it were the loaded text |
 
 **Failure, boundary and permission behaviour**
 
@@ -115,10 +117,11 @@ is missing from the design.
 
 | Screen | Section in the design | Functions it serves | States that must exist |
 |---|---|---|---|
-| Single content screen | Centred "Hello Word" | CONTENT-001, CONTENT-002, CONTENT-003 | loading, loaded, empty, error |
+| Single content screen | Centred "Hello Word" | CONTENT-001, CONTENT-002, CONTENT-003 | loading, loaded, error |
 
 The design's `Loading` / `Loaded` / `Empty` / `Error` demo pills and caption are
-preview-only controls: the four states are built, the controls are not shipped.
+preview-only controls: the controls are not shipped. The `Empty` demo state is
+preview-only; an empty stored value renders as the error state per §4.
 
 ## 6. Non-functional requirements
 
