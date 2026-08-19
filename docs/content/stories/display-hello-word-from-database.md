@@ -1,85 +1,62 @@
 # Story — Display Hello Word from database
 
-- Module: `content`
-- Plan item: Display Hello Word from database
-- Requirements: CONTENT-001, CONTENT-002, CONTENT-003
-- Test cases: `docs/content/test-cases/display-hello-word.md`
+Module: `content`
+Plan item: Display Hello Word from database
+Requirement ids: CONTENT-001, CONTENT-002, CONTENT-003
 
-## 1. User story
+## User story
 
-As a Guest, I want to load the site and see the text `Hello Word`, so that I
-receive the product's only message, which originates from the PostgreSQL
-database rather than the frontend.
+As a Guest, I want to load the site and see the text `Hello Word` fetched from
+the database, so that I receive the product's only message, which originates
+from the database and is never hardcoded in the frontend.
 
-## 2. In scope
+## In scope
 
-- A Go API endpoint that reads the content text from PostgreSQL and returns it.
-- A frontend that fetches that value on load and renders it centred, dark text
-  on white, no animation.
-- Three UI states: loading (before the fetch completes), loaded (the fetched
-  text), error (fetch failed, with a retry control).
-- Backend self-migration and a seed row whose text is exactly `Hello Word`
-  (seeding is a migration per `architecture/overview.md` §8).
-- The frontend must not hardcode the string `Hello Word`; it arrives from the API.
+- A Go backend endpoint that reads the single content row from PostgreSQL and
+  returns it. Contract per `docs/architecture/services.md`: `GET /v1/content`
+  with the §2.3 error envelope (`NOT_FOUND`, `UNAVAILABLE`, `INTERNAL`).
+- A Next.js frontend component that fetches the value from the backend and
+  renders it centred on a white background with dark text and no animation.
+- Three UI states: loading (dots pulse), loaded (h1 with the fetched value),
+  and error (message plus a retry control).
+- The seed data: a migration inserts the single row whose value is exactly
+  `Hello Word`.
 
-## 3. Out of scope
+## Out of scope
 
-- Editing or writing the text — it is fixed to `Hello Word`.
-- Authentication, accounts, or any permission check — the only actor is a Guest.
-- Any second screen or navigation — the product is a single screen.
-- The design's `Loading` / `Loaded` / `Empty` / `Error` demo pills and caption —
-  preview-only controls, not shipped (`design/design-system.md` Known deviations
-  and project memory `design.preview_note`).
-- A separate empty-value UI state — an empty or absent stored value renders as
-  the error state per SRS §4.
+- Editing or writing the text — the value is fixed to `Hello Word`.
+- Authentication or accounts — the only actor is a Guest; no sign-in.
+- Any second screen, navigation, or routing — the product is a single screen.
+- Caching or offline persistence of the value.
+- The preview-only `Simulate error` / demo pills from the mockup — build the
+  four states, do not ship the controls.
 
-## 4. UI scope
+## UI scope
 
-Single content screen, matching the approved design. It touches the `Status
-panel` component and the `Button` component (primary, for retry).
+Touches the single content screen from the approved design: the status panel
+with its three shipped states (loading, loaded, error). The error state adds a
+retry control per CONTENT-003. The `Empty` demo state is not shipped — an empty
+stored value renders as the error state.
 
-| State | What the Guest sees | Tokens |
-|---|---|---|
-| Loading | "Loading" plus three pulsing dots | `--color-text-muted`, `--duration-pulse` |
-| Loaded | `h1` showing the fetched text `Hello Word` | `--color-text`, `--text-display` |
-| Error | "Could not load the text from the database." plus a retry button | `--color-danger`, `--color-primary` |
+## Acceptance criteria
 
-The panel carries `role="status"` and `aria-live="polite"`; the error message
-carries `role="alert"`. State switches toggle a `.hidden` class on the state
-nodes. The retry button is `type="button"` with a visible focus ring.
+| # | Given | When | Then |
+|---|---|---|---|
+| AC-1 | Database holds the value `Hello Word` | Guest loads the site | Page shows exactly `Hello Word`, centred, dark text on white, no animation |
+| AC-2 | Database holds the value `Hello Word` | Frontend source is inspected | The string `Hello Word` is not hardcoded in the frontend; it arrives from the API |
+| AC-3 | Fetch is in progress | Guest loads the site | Loading state shown until the fetch completes |
+| AC-4 | Fetch succeeds | Fetch completes | Loading state replaced by the loaded text |
+| AC-5 | Fetch fails (backend unavailable or returns an error) | Guest loads or reloads | Error state shown, not a blank screen |
+| AC-6 | Fetch failed, error state showing | Guest triggers retry and fetch succeeds | Error state replaced by the loaded text |
+| AC-7 | Database has no row for the text | Guest loads the site | Error state with retry shown, not a blank screen |
+| AC-8 | Stored text is an empty string | Guest loads the site | Error state with retry shown; empty string not rendered as success |
 
-## 5. Acceptance criteria
+## Dependencies
 
-1. Given the database holds the value `Hello Word`, when the Guest loads the
-   site, then the page shows exactly `Hello Word`, centred, dark text on white,
-   no animation.
-2. Given the page is loaded, when the frontend source is inspected, then the
-   string `Hello Word` is not hardcoded in frontend source; it arrives from the API.
-3. Given the fetch is in progress, when the Guest loads the site, then a loading
-   state is shown until the fetch completes.
-4. Given the fetch succeeds, when the fetch completes, then the loading state is
-   replaced by the loaded text.
-5. Given the fetch fails (backend unavailable or non-success status), when the
-   Guest loads or reloads, then an error state is shown, not a blank screen.
-6. Given the fetch failed and an error state is showing, when the Guest triggers
-   retry and the fetch succeeds, then the error state is replaced by the loaded text.
-7. Given the database has no row for the text, when the Guest loads the site,
-   then an error state with a retry control is shown, not a blank screen.
-8. Given the stored text is an empty string, when the Guest loads the site, then
-   an error state with a retry control is shown; the empty string is not rendered
-   as if it were the loaded text.
-
-## 6. Dependencies
-
-- Go backend and PostgreSQL, for reading and serving the text; API contract in
-  `docs/architecture/services.md` (TL).
-- Seed migration inserting the single `Hello Word` row (TL, backend).
-- `code/frontend/app/page.tsx` composition root and `code/frontend/app/globals.css`
-  tokens (TL scaffold) — this story mounts one component into `page.tsx`.
-
-## 7. Notes for implementation
-
-- The frontend is built and reviewed on mock data first; `lib/mock/` is deleted
-  when the real API replaces it.
-- Backend must never return an empty string as success; treat no-row and empty
-  value as an error the frontend maps to the error state.
+- Backend endpoint `GET /v1/content` and `/healthz` — defined in
+  `docs/architecture/services.md`, implemented in the BE PR.
+- PostgreSQL seeded via the migration that inserts the single `Hello Word` row
+  (matches `docs/architecture/erd.md` §3.1: table `contents`, column `value`,
+  singleton index `uq_contents_singleton`, constraint `ck_contents_value_not_blank`).
+- Frontend reads the API base from `NEXT_PUBLIC_API_URL`, falling back to
+  `/api` (Next proxy strips the `/api` prefix before the backend).
